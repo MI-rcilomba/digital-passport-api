@@ -17,3 +17,23 @@ test('returns the latest block', () => {
 
   assert.equal(latestBlock, blockchain.chain[0]);
 });
+
+test('starts with no pending transactions', () => {
+  const blockchain = new Blockchain();
+
+  assert.deepEqual(blockchain.pendingTransactions, []);
+});
+
+test('adds a transaction to pending transactions', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+
+  blockchain.addTransaction(transaction);
+
+  assert.deepEqual(blockchain.pendingTransactions, [transaction]);
+});

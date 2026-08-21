@@ -3,6 +3,7 @@ import Block from './Block.js';
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
+    this.pendingTransactions = [];
   }
 
   createGenesisBlock() {
@@ -11,6 +12,10 @@ class Blockchain {
 
   getLatestBlock() {
     return this.chain[this.chain.length - 1];
+  }
+
+  addTransaction(transaction) {
+    this.pendingTransactions.push(transaction);
   }
 }
 
