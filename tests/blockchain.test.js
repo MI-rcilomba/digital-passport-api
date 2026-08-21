@@ -37,3 +37,65 @@ test('adds a transaction to pending transactions', () => {
 
   assert.deepEqual(blockchain.pendingTransactions, [transaction]);
 });
+
+test('rejects a first product transaction if it does not come from the manufacturer', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xFakeSeller',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+
+  assert.throws(() => blockchain.addTransaction(transaction), {
+    message: 'Invalid transaction',
+  });
+  assert.deepEqual(blockchain.pendingTransactions, []);
+});
+
+test('rejects a transfer from someone who is not the current owner', () => {
+  const blockchain = new Blockchain();
+  const firstTransaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+  const invalidTransfer = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xFakeSeller',
+    toAddress: '0xCollectorB',
+    timestamp: 1772275200000,
+  };
+
+  blockchain.addTransaction(firstTransaction);
+
+  assert.throws(() => blockchain.addTransaction(invalidTransfer), {
+    message: 'Invalid transaction',
+  });
+  assert.deepEqual(blockchain.pendingTransactions, [firstTransaction]);
+});
+
+test('accepts a transfer from the current owner', () => {
+  const blockchain = new Blockchain();
+  const firstTransaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+  const validTransfer = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xCollectorA',
+    toAddress: '0xCollectorB',
+    timestamp: 1772275200000,
+  };
+
+  blockchain.addTransaction(firstTransaction);
+  blockchain.addTransaction(validTransfer);
+
+  assert.deepEqual(blockchain.pendingTransactions, [
+    firstTransaction,
+    validTransfer,
+  ]);
+});
