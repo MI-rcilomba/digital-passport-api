@@ -22,6 +22,23 @@ class Blockchain {
     this.pendingTransactions.push(transaction);
   }
 
+  minePendingTransactions(difficulty) {
+    const latestBlock = this.getLatestBlock();
+    const newBlock = new Block(
+      latestBlock.index + 1,
+      Date.now(),
+      this.pendingTransactions,
+      latestBlock.hash,
+    );
+
+    newBlock.mineBlock(difficulty);
+
+    this.chain.push(newBlock);
+    this.pendingTransactions = [];
+
+    return newBlock;
+  }
+
   isTransactionValid(transaction) {
     const currentOwner = this.getCurrentOwner(transaction.serialNumber);
 
@@ -47,6 +64,23 @@ class Blockchain {
     }
 
     return productTransactions[productTransactions.length - 1].toAddress;
+  }
+
+  isChainValid() {
+    for (let i = 1; i < this.chain.length; i += 1) {
+      const currentBlock = this.chain[i];
+      const previousBlock = this.chain[i - 1];
+
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false;
+      }
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
 

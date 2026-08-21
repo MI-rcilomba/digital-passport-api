@@ -99,3 +99,95 @@ test('accepts a transfer from the current owner', () => {
     validTransfer,
   ]);
 });
+
+test('mines pending transactions into a new block', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+  const genesisHash = blockchain.getLatestBlock().hash;
+
+  blockchain.addTransaction(transaction);
+  const minedBlock = blockchain.minePendingTransactions(2);
+
+  assert.equal(blockchain.chain.length, 2);
+  assert.equal(minedBlock.index, 1);
+  assert.equal(minedBlock.previousHash, genesisHash);
+  assert.deepEqual(minedBlock.data, [transaction]);
+  assert.equal(minedBlock.hash.startsWith('00'), true);
+  assert.deepEqual(blockchain.pendingTransactions, []);
+});
+
+test('uses mined transaction history when validating future transfers', () => {
+  const blockchain = new Blockchain();
+  const firstTransaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+  const validTransfer = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xCollectorA',
+    toAddress: '0xCollectorB',
+    timestamp: 1772275200000,
+  };
+
+  blockchain.addTransaction(firstTransaction);
+  blockchain.minePendingTransactions(1);
+  blockchain.addTransaction(validTransfer);
+
+  assert.deepEqual(blockchain.pendingTransactions, [validTransfer]);
+});
+
+test('validates a correct chain', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+
+  blockchain.addTransaction(transaction);
+  blockchain.minePendingTransactions(1);
+
+  assert.equal(blockchain.isChainValid(), true);
+});
+
+test('detects changed data in a mined block', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+
+  blockchain.addTransaction(transaction);
+  blockchain.minePendingTransactions(1);
+
+  blockchain.chain[1].data[0].toAddress = '0xAttacker';
+
+  assert.equal(blockchain.isChainValid(), false);
+});
+
+test('detects a broken previousHash link', () => {
+  const blockchain = new Blockchain();
+  const transaction = {
+    serialNumber: 'ROLEX-SUB-9981',
+    fromAddress: '0xManufacturerKey',
+    toAddress: '0xCollectorA',
+    timestamp: 1772188800000,
+  };
+
+  blockchain.addTransaction(transaction);
+  blockchain.minePendingTransactions(1);
+
+  blockchain.chain[1].previousHash = 'fake-previous-hash';
+
+  assert.equal(blockchain.isChainValid(), false);
+});
