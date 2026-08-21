@@ -31,3 +31,19 @@ test('changes the hash when the nonce changes', () => {
 
   assert.notEqual(newHash, originalHash);
 });
+
+test('mines a block with the required difficulty prefix', () => {
+  const block = new Block(1, 1772188800000, [], 'previous-hash');
+
+  block.mineBlock(2);
+
+  assert.equal(block.hash.startsWith('00'), true);
+});
+
+test('updates the nonce while mining', () => {
+  const block = new Block(1, 1772188800000, [], 'previous-hash');
+
+  block.mineBlock(2);
+
+  assert.equal(block.nonce > 0, true);
+});
