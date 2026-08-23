@@ -47,3 +47,35 @@ test('updates the nonce while mining', () => {
 
   assert.equal(block.nonce > 0, true);
 });
+
+test('creates the same hash for data with the same values in different key order', () => {
+  const firstBlock = new Block(
+    1,
+    1772188800000,
+    [
+      {
+        serialNumber: 'ROLEX-SUB-9981',
+        fromAddress: '0xManufacturerKey',
+        toAddress: '0xCollectorA',
+        timestamp: 1772188800000,
+      },
+    ],
+    'previous-hash',
+  );
+
+  const secondBlock = new Block(
+    1,
+    1772188800000,
+    [
+      {
+        timestamp: 1772188800000,
+        toAddress: '0xCollectorA',
+        fromAddress: '0xManufacturerKey',
+        serialNumber: 'ROLEX-SUB-9981',
+      },
+    ],
+    'previous-hash',
+  );
+
+  assert.equal(firstBlock.hash, secondBlock.hash);
+});

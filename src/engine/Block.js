@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { stableStringify } from '../utils/stableStringify.js';
 
 class Block {
   constructor(index, timestamp, data, previousHash = '') {
@@ -11,7 +12,7 @@ class Block {
   }
 
   calculateHash() {
-    const blockContent = JSON.stringify({
+    const blockContent = stableStringify({
       index: this.index,
       timestamp: this.timestamp,
       data: this.data,
