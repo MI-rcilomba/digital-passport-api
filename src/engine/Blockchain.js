@@ -16,7 +16,9 @@ class Blockchain {
 
   addTransaction(transaction) {
     if (!this.isTransactionValid(transaction)) {
-      throw new Error('Invalid transaction');
+      const error = new Error('Invalid transaction');
+      error.statusCode = 422;
+      throw error;
     }
 
     this.pendingTransactions.push(transaction);

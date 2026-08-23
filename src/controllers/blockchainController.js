@@ -7,24 +7,29 @@ export function getChain(req, res) {
   });
 }
 
-export function createTransaction(req, res) {
-  const transaction = req.body;
+export function createTransaction(req, res, next) {
+  try {
+    const transaction = req.body;
 
-  blockchain.addTransaction(transaction);
+    blockchain.addTransaction(transaction);
 
-  res.status(201).json({
-    message: 'Transaction added to pending transactions',
-    transaction,
-    pendingTransactions: blockchain.pendingTransactions,
-  });
+    return res.status(201).json({
+      message: 'Transaction added to pending transactions',
+      transaction,
+      pendingTransactions: blockchain.pendingTransactions,
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 export function minePendingTransactions(req, res) {
-  const difficulty = 1;
+  const difficulty = Number(process.env.POW_DIFFICULTY || 1);
   const minedBlock = blockchain.minePendingTransactions(difficulty);
 
   res.status(201).json({
     message: 'Block mined successfully',
+    difficulty,
     block: minedBlock,
     chainLength: blockchain.chain.length,
   });
