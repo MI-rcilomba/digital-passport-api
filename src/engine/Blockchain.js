@@ -66,6 +66,17 @@ class Blockchain {
     return productTransactions[productTransactions.length - 1].toAddress;
   }
 
+  getProductHistory(serialNumber) {
+    const transactions = [
+      ...this.chain.flatMap((block) => block.data),
+      ...this.pendingTransactions,
+    ];
+
+    return transactions.filter(
+      (transaction) => transaction.serialNumber === serialNumber,
+    );
+  }
+
   isChainValid() {
     for (let i = 1; i < this.chain.length; i += 1) {
       const currentBlock = this.chain[i];
